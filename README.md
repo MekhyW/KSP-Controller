@@ -11,7 +11,8 @@ Desenvolvendo um controle remoto Bluetooth.
 ### Ideia
 
 A ideia do projeto é criar um controle bluetooth que simula um mission controller realista para o jogo Kerbal Space Program, assim aumentando a imersão do jogo e providenciando feedback visual diretamente no controle.
-Com isso, os jogadores podem ter uma experiência mais envolvente e realista, sentindo-se como se estivessem realmente no comando de uma missão espacial.
+Com isso, os jogadores podem ter uma experiência mais envolvente e realista, sentindo-se como se estivessem realmente no comando de uma missão espacial. 
+Para isso será usado uma placa SAME70-XPLD com vários periféricos e um módulo bluetooth HC-05.
 
 ### O Que é o Kerbal Space Program?
 
@@ -33,6 +34,8 @@ Jogadores de Kerbal Space Program e admiradores do valdisnei.
 ### Software/Jogo 
 
 Kerbal space  program (KSP), utilizando mod kRPC
+O mod possibilita que o jogo seja controlado através da seguinte biblioteca: https://krpc.github.io/krpc/
+
 ### Jornada do usuários
 Jornada 1:
 
