@@ -76,7 +76,7 @@ Jornada 2:
 * Estado da missao: led do botao de estagio
 * Estado Controle de estabilidade automatico: Cor da led do botao
 * Estado Controle de reacao: Led do botao
-* Niveis de combustivel e Agente Oxidante: Segmento de fita led rgb.
+* Niveis de combustivel e Agente Oxidante: Segmento de fita led RGB.
 ### Design (2 pts)
 
 <!--
