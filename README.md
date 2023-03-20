@@ -15,6 +15,7 @@ Com isso, os jogadores podem ter uma experiência mais envolvente e realista, se
 
 ### O Que é o Kerbal Space Program?
 
+![KSP](https://cdn1.epicgames.com/offer/ca0530b485754032be50cb6f27be0c2c/EGS_KerbalSpaceProgram_Squad_S1_2560x1440-380681e19358cb3d1e1162ce755e5e01)
 Kerbal Space Program é um jogo de simulação espacial desenvolvido pela Squad e lançado em 2011. Nele, o jogador assume o papel de administrador de uma agência espacial fictícia e deve construir e gerenciar naves espaciais, realizar missões de exploração e pesquisa em um sistema solar simulado.
 
 O jogo possui um alto grau de realismo, com física e mecânica orbital precisas, o que significa que o jogador deve levar em conta fatores como a gravidade, a atmosfera, o peso e o empuxo ao projetar e lançar suas naves. Além disso, os kerbals, criaturas humanoides verdes que habitam o jogo, são os tripulantes dessas naves e também possuem suas próprias habilidades e limitações.
@@ -23,7 +24,7 @@ Kerbal Space Program é um jogo desafiador e educativo, que exige planejamento c
 
 ### Nome
 Valdisnei da Chroma 2:
-16.6 milhoes de cores
+16.6 milhões de cores
 
 ### Usuários 
 
@@ -32,7 +33,7 @@ Jogadores de Kerbal Space Program e admiradores do valdisnei.
 ### Software/Jogo 
 
 Kerbal space  program (KSP), utilizando mod kRPC
-### Jornada do usuários (3 pts)
+### Jornada do usuários
 Jornada 1:
 
         O usuário entra no jogo Kerbal Space e ativa o mod de comunicação com o controle.  Em seguida, ele inicia a gameplay usando o slider de throttle (potenciometro linear) e aperta botão de estagio para acionar os motores da nave. Antes de entrar em órbita, o usuário vê pela resposta visual dos botões de Action Group que o combustível está acabando. 
@@ -43,7 +44,7 @@ Jornada 2:
         O usuário entra no jogo Kerbal Space e ativa o mod de comunicação com o controle. Em seguida, ele inicia a gameplay usando o slider de throttle (potenciometro linear) e aperta botão de estagio para acionar os motores da nave. Através das leds o jogador ve que o combustivel do primeiro estagio acabou entao ele aperta botao stage para fazer separacao de estagio. Em seguida o combustivel do segundo estagio acaba tambem (essa e uma missao sub-orbital). Entao o jogador aperta o botao estagio novamente para ejetar o motor, e ativa o action group de paraquedas.
         
 
-### Comandos/ Feedbacks (2 pts)
+### Comandos/ Feedbacks
 
 #### Comandos
 * Throttle 
@@ -61,7 +62,7 @@ Jornada 2:
 * Estado Controle de reacao
 * Niveis de combustivel e Agente Oxidante
 
-## In/OUT (3 pts)
+## In/OUT
 #### IN
 * Throttle: Potenciometro Linear
 * Abort: Chave alanvaca
@@ -77,8 +78,12 @@ Jornada 2:
 * Estado Controle de estabilidade automatico: Cor da led do botao
 * Estado Controle de reacao: Led do botao
 * Niveis de combustivel e Agente Oxidante: Segmento de fita led RGB.
-### Design (2 pts)
+### Design
 
-<!--
-Faca um esboco de como seria esse controle (vai ter uma etapa que terão que detalhar melhor isso).
--->
+O design do controle foi inspirado nas seguintes criações da comunidade de KSP:
+![KSP](https://hackaday.com/wp-content/uploads/2018/01/kspcon_feat1.jpg)
+![KSP](https://content.instructables.com/F0Q/NNCS/KTMY1XJX/F0QNNCSKTMY1XJX.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=150)
+![KSP](https://preview.redd.it/pdcl51a405u81.jpg?auto=webp&s=74cbd29ae007c6da01902a85cc1ae107bfc424d4)
+
+O nosso design segue esse layout:
+![KSP](valdisnei.png)
