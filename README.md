@@ -47,7 +47,7 @@ Jornada 2:
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;O usuário entra no jogo Kerbal Space e ativa o mod de comunicação com o controle. Em seguida, ele inicia a gameplay usando o slider de throttle (potenciometro linear) e aperta botão de estagio para acionar os motores da nave. Através das leds o jogador ve que o combustivel do primeiro estagio acabou entao ele aperta botao stage para fazer separacao de estagio. Em seguida o combustivel do segundo estagio acaba tambem (essa e uma missao sub-orbital). Entao o jogador aperta o botao estagio novamente para ejetar o motor, e ativa o action group de paraquedas.
         
 
-### Comandos/ Feedbacks
+### Comandos/ Feedbacks do jogo
 
 #### Comandos
 * Throttle 
