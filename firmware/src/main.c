@@ -1,10 +1,3 @@
-/************************************************************************
-* 5 semestre - Eng. da Computao - Insper
-*
-* 2021 - Exemplo com HC05 com RTOS
-*
-*/
-
 #include <asf.h>
 #include "conf_board.h"
 #include <string.h>
@@ -73,9 +66,6 @@ extern void xPortSysTickHandler(void);
 extern void vApplicationStackOverflowHook(xTaskHandle *pxTask,
 signed char *pcTaskName) {
 	printf("stack overflow %x %s\r\n", pxTask, (portCHAR *)pcTaskName);
-	/* If the parameters have been corrupted then inspect pxCurrentTCB to
-	* identify which task has overflowed its stack.
-	*/
 	for (;;) {
 	}
 }
@@ -85,17 +75,9 @@ extern void vApplicationIdleHook(void) {
 	pmc_sleep(SAM_PM_SMODE_SLEEP_WFI);
 }
 
-/* This function is called by FreeRTOS each tick */
 extern void vApplicationTickHook(void) { }
 
 extern void vApplicationMallocFailedHook(void) {
-	/* Called if a call to pvPortMalloc() fails because there is insufficient
-	free memory available in the FreeRTOS heap.  pvPortMalloc() is called
-	internally by FreeRTOS API functions that create tasks, queues, software
-	timers, and semaphores.  The size of the FreeRTOS heap is set by the
-	configTOTAL_HEAP_SIZE configuration constant in FreeRTOSConfig.h. */
-
-	/* Force an assert. */
 	configASSERT( ( volatile void * ) NULL );
 }
 
@@ -108,12 +90,8 @@ extern void vApplicationMallocFailedHook(void) {
 /************************************************************************/
 
 void io_init(void) {
-
-	// Ativa PIOs
 	pmc_enable_periph_clk(LED_PIO_ID);
 	pmc_enable_periph_clk(BUT_PIO_ID);
-
-	// Configura Pinos
 	pio_configure(LED_PIO, PIO_OUTPUT_0, LED_IDX_MASK, PIO_DEFAULT | PIO_DEBOUNCE);
 	pio_configure(BUT_PIO, PIO_INPUT, BUT_IDX_MASK, PIO_PULLUP);
 }
@@ -129,23 +107,15 @@ static void configure_console(void) {
 		.stopbits = CONF_UART_STOP_BITS,
 		#endif
 	};
-
-	/* Configure console UART. */
 	stdio_serial_init(CONF_UART, &uart_serial_options);
-
-	/* Specify that stdout should not be buffered. */
 	#if defined(__GNUC__)
 	setbuf(stdout, NULL);
 	#else
-	/* Already the case in IAR's Normal DLIB default configuration: printf()
-	* emits one character at a time.
-	*/
 	#endif
 }
 
 uint32_t usart_puts(uint8_t *pstring) {
 	uint32_t i ;
-
 	while(*(pstring + i))
 	if(uart_is_tx_empty(USART_COM))
 	usart_serial_putchar(USART_COM, *(pstring+i++));
@@ -159,7 +129,6 @@ int usart_get_string(Usart *usart, char buffer[], int bufferlen, uint timeout_ms
 	uint timecounter = timeout_ms;
 	uint32_t rx;
 	uint32_t counter = 0;
-
 	while( (timecounter > 0) && (counter < bufferlen - 1)) {
 		if(usart_read(usart, &rx) == 0) {
 			buffer[counter++] = rx;
@@ -214,18 +183,12 @@ int hc05_init(void) {
 
 void task_bluetooth(void) {
 	printf("Task Bluetooth started \n");
-	
 	printf("Inicializando HC05 \n");
 	config_usart0();
 	hc05_init();
-
-	// configura LEDs e Botões
 	io_init();
-
 	char button1 = '0';
 	char eof = 'X';
-
-	// Task não deve retornar.
 	while(1) {
 		// atualiza valor do botão
 		if(pio_get(BUT_PIO, PIO_INPUT, BUT_IDX_MASK) == 0) {
@@ -256,20 +219,11 @@ void task_bluetooth(void) {
 /************************************************************************/
 
 int main(void) {
-	/* Initialize the SAM system */
 	sysclk_init();
 	board_init();
-
 	configure_console();
-
-	/* Create task to make led blink */
 	xTaskCreate(task_bluetooth, "BLT", TASK_BLUETOOTH_STACK_SIZE, NULL,	TASK_BLUETOOTH_STACK_PRIORITY, NULL);
-
-	/* Start the scheduler. */
 	vTaskStartScheduler();
-
 	while(1){}
-
-	/* Will only get here if there was insufficient memory to create the idle task. */
 	return 0;
 }
