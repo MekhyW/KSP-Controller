@@ -1,22 +1,11 @@
 #include <asf.h>
 #include "conf_board.h"
 #include <string.h>
+#include "backlit-buttons.h"
 
 /************************************************************************/
 /* defines                                                              */
 /************************************************************************/
-
-// LEDs
-#define LED_PIO      PIOC
-#define LED_PIO_ID   ID_PIOC
-#define LED_IDX      8
-#define LED_IDX_MASK (1 << LED_IDX)
-
-// Botão
-#define BUT_PIO      PIOA
-#define BUT_PIO_ID   ID_PIOA
-#define BUT_IDX      11
-#define BUT_IDX_MASK (1 << BUT_IDX)
 
 // usart (bluetooth ou serial)
 // Descomente para enviar dados
@@ -58,6 +47,8 @@ extern void xPortSysTickHandler(void);
 /* variaveis globais                                                    */
 /************************************************************************/
 
+volatile char estado[] = {0, 0};
+
 /************************************************************************/
 /* RTOS application HOOK                                                */
 /************************************************************************/
@@ -90,10 +81,49 @@ extern void vApplicationMallocFailedHook(void) {
 /************************************************************************/
 
 void io_init(void) {
-	pmc_enable_periph_clk(LED_PIO_ID);
-	pmc_enable_periph_clk(BUT_PIO_ID);
-	pio_configure(LED_PIO, PIO_OUTPUT_0, LED_IDX_MASK, PIO_DEFAULT | PIO_DEBOUNCE);
-	pio_configure(BUT_PIO, PIO_INPUT, BUT_IDX_MASK, PIO_PULLUP);
+	pmc_enable_periph_clk(BUT1_PIO_ID);
+	pmc_enable_periph_clk(BUT2_PIO_ID);
+	pmc_enable_periph_clk(BUT3_PIO_ID);
+	pmc_enable_periph_clk(BUT4_PIO_ID);
+	pmc_enable_periph_clk(BUT5_PIO_ID);
+	pmc_enable_periph_clk(BUT6_PIO_ID);
+	pmc_enable_periph_clk(BUT7_PIO_ID);
+	pmc_enable_periph_clk(BUT8_PIO_ID);
+	pmc_enable_periph_clk(BUT9_PIO_ID);
+	pmc_enable_periph_clk(BUT10_PIO_ID);
+	pio_configure(BUT1_PIO, PIO_INPUT, BUT1_IDX_MASK, PIO_PULLUP | PIO_DEBOUNCE);
+	pio_set_debounce_filter(BUT1_PIO, BUT1_IDX_MASK, 100);
+	pio_configure(BUT2_PIO, PIO_INPUT, BUT2_IDX_MASK, PIO_PULLUP | PIO_DEBOUNCE);
+	pio_set_debounce_filter(BUT2_PIO, BUT2_IDX_MASK, 100);
+	pio_configure(BUT3_PIO, PIO_INPUT, BUT3_IDX_MASK, PIO_PULLUP | PIO_DEBOUNCE);
+	pio_set_debounce_filter(BUT3_PIO, BUT3_IDX_MASK, 100);
+	pio_configure(BUT4_PIO, PIO_INPUT, BUT4_IDX_MASK, PIO_PULLUP | PIO_DEBOUNCE);
+	pio_set_debounce_filter(BUT4_PIO, BUT4_IDX_MASK, 100);
+	pio_configure(BUT5_PIO, PIO_INPUT, BUT5_IDX_MASK, PIO_PULLUP | PIO_DEBOUNCE);
+	pio_set_debounce_filter(BUT5_PIO, BUT5_IDX_MASK, 100);
+	pio_configure(BUT6_PIO, PIO_INPUT, BUT6_IDX_MASK, PIO_PULLUP | PIO_DEBOUNCE);
+	pio_set_debounce_filter(BUT6_PIO, BUT6_IDX_MASK, 100);
+	pio_configure(BUT7_PIO, PIO_INPUT, BUT7_IDX_MASK, PIO_PULLUP | PIO_DEBOUNCE);
+	pio_set_debounce_filter(BUT7_PIO, BUT7_IDX_MASK, 100);
+	pio_configure(BUT8_PIO, PIO_INPUT, BUT8_IDX_MASK, PIO_PULLUP | PIO_DEBOUNCE);
+	pio_set_debounce_filter(BUT8_PIO, BUT8_IDX_MASK, 100);
+	pio_configure(BUT9_PIO, PIO_INPUT, BUT9_IDX_MASK, PIO_PULLUP | PIO_DEBOUNCE);
+	pio_set_debounce_filter(BUT9_PIO, BUT9_IDX_MASK, 100);
+	pio_configure(BUT10_PIO, PIO_INPUT, BUT10_IDX_MASK, PIO_PULLUP | PIO_DEBOUNCE);
+	pio_set_debounce_filter(BUT10_PIO, BUT10_IDX_MASK, 100);
+}
+
+void read_but(void) {
+	estado[0] = 0 | (!pio_get(BUT1_PIO, PIO_INPUT, BUT1_IDX_MASK) << 0);
+	estado[0] = estado[0] | (!pio_get(BUT2_PIO, PIO_INPUT, BUT2_IDX_MASK) << 1);
+	estado[0] = estado[0] | (!pio_get(BUT3_PIO, PIO_INPUT, BUT3_IDX_MASK) << 2);
+	estado[0] = estado[0] | (!pio_get(BUT4_PIO, PIO_INPUT, BUT4_IDX_MASK) << 3);
+	estado[0] = estado[0] | (!pio_get(BUT5_PIO, PIO_INPUT, BUT5_IDX_MASK) << 4);
+	estado[0] = estado[0] | (!pio_get(BUT6_PIO, PIO_INPUT, BUT6_IDX_MASK) << 5);
+	estado[0] = estado[0] | (!pio_get(BUT7_PIO, PIO_INPUT, BUT7_IDX_MASK) << 6);
+	estado[1] = 0 | (!pio_get(BUT8_PIO, PIO_INPUT, BUT8_IDX_MASK) << 0);
+	estado[1] = estado[1] | (!pio_get(BUT9_PIO, PIO_INPUT, BUT9_IDX_MASK) << 1);
+	estado[1] = estado[1] | (!pio_get(BUT10_PIO, PIO_INPUT, BUT10_IDX_MASK) << 2);
 }
 
 static void configure_console(void) {
@@ -158,7 +188,6 @@ void config_usart0(void) {
 	usart_serial_init(USART0, &config);
 	usart_enable_tx(USART0);
 	usart_enable_rx(USART0);
-
 	// RX - PB0  TX - PB1
 	pio_configure(PIOB, PIO_PERIPH_C, (1 << 0), PIO_DEFAULT);
 	pio_configure(PIOB, PIO_PERIPH_C, (1 << 1), PIO_DEFAULT);
@@ -185,23 +214,21 @@ void task_bluetooth(void) {
 	printf("Task Bluetooth started \n");
 	printf("Inicializando HC05 \n");
 	config_usart0();
-	hc05_init();
+	//hc05_init();
 	io_init();
 	char button1 = '0';
-	char eof = 'X';
+	char eof = -1;
 	while(1) {
-		// atualiza valor do botão
-		if(pio_get(BUT_PIO, PIO_INPUT, BUT_IDX_MASK) == 0) {
-			button1 = '1';
-		} else {
-			button1 = '0';
-		}
-
+		read_but();
 		// envia status botão
 		while(!usart_is_tx_ready(USART_COM)) {
 			vTaskDelay(10 / portTICK_PERIOD_MS);
 		}
-		usart_write(USART_COM, button1);
+		usart_write(USART_COM, estado[0]);
+		while(!usart_is_tx_ready(USART_COM)) {
+			vTaskDelay(10 / portTICK_PERIOD_MS);
+		}
+		usart_write(USART_COM, estado[1]);
 		
 		// envia fim de pacote
 		while(!usart_is_tx_ready(USART_COM)) {
@@ -209,8 +236,8 @@ void task_bluetooth(void) {
 		}
 		usart_write(USART_COM, eof);
 
-		// dorme por 500 ms
-		vTaskDelay(500 / portTICK_PERIOD_MS);
+		// dorme por 10 ms
+		vTaskDelay(300 / portTICK_PERIOD_MS);
 	}
 }
 
