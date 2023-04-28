@@ -2,6 +2,8 @@
 #include "conf_board.h"
 #include <string.h>
 #include "backlit-buttons.h"
+#include "abort.h"
+#include "throttle.h"
 
 /************************************************************************/
 /* defines                                                              */
@@ -40,34 +42,26 @@ extern void vApplicationMallocFailedHook(void);
 extern void xPortSysTickHandler(void);
 
 /************************************************************************/
-/* constants                                                            */
-/************************************************************************/
-
-/************************************************************************/
 /* variaveis globais                                                    */
 /************************************************************************/
 
 volatile char estado[] = {0, 0};
+volatile int throttle = 0;
 
 /************************************************************************/
 /* RTOS application HOOK                                                */
 /************************************************************************/
 
-/* Called if stack overflow during execution */
 extern void vApplicationStackOverflowHook(xTaskHandle *pxTask,
 signed char *pcTaskName) {
 	printf("stack overflow %x %s\r\n", pxTask, (portCHAR *)pcTaskName);
 	for (;;) {
 	}
 }
-
-/* This function is called by FreeRTOS idle task */
 extern void vApplicationIdleHook(void) {
 	pmc_sleep(SAM_PM_SMODE_SLEEP_WFI);
 }
-
 extern void vApplicationTickHook(void) { }
-
 extern void vApplicationMallocFailedHook(void) {
 	configASSERT( ( volatile void * ) NULL );
 }
@@ -75,6 +69,10 @@ extern void vApplicationMallocFailedHook(void) {
 /************************************************************************/
 /* handlers / callbacks                                                 */
 /************************************************************************/
+
+static void AFEC_pot_callback(void) {
+  throttle = (throttle * 0.5) + (afec_channel_get_value(AFEC_POT, AFEC_POT_CHANNEL) * 0.5);
+}
 
 /************************************************************************/
 /* funcoes                                                              */
@@ -91,6 +89,7 @@ void io_init(void) {
 	pmc_enable_periph_clk(BUT8_PIO_ID);
 	pmc_enable_periph_clk(BUT9_PIO_ID);
 	pmc_enable_periph_clk(BUT10_PIO_ID);
+	pmc_enable_periph_clk(ABORT_PIO_ID);
 	pio_configure(BUT1_PIO, PIO_INPUT, BUT1_IDX_MASK, PIO_PULLUP | PIO_DEBOUNCE);
 	pio_set_debounce_filter(BUT1_PIO, BUT1_IDX_MASK, 100);
 	pio_configure(BUT2_PIO, PIO_INPUT, BUT2_IDX_MASK, PIO_PULLUP | PIO_DEBOUNCE);
@@ -111,6 +110,8 @@ void io_init(void) {
 	pio_set_debounce_filter(BUT9_PIO, BUT9_IDX_MASK, 100);
 	pio_configure(BUT10_PIO, PIO_INPUT, BUT10_IDX_MASK, PIO_PULLUP | PIO_DEBOUNCE);
 	pio_set_debounce_filter(BUT10_PIO, BUT10_IDX_MASK, 100);
+	pio_configure(ABORT_PIO, PIO_INPUT, ABORT_IDX_MASK, PIO_PULLUP | PIO_DEBOUNCE);
+	pio_set_debounce_filter(ABORT_PIO, ABORT_IDX_MASK, 100);
 }
 
 void read_but(void) {
@@ -124,6 +125,26 @@ void read_but(void) {
 	estado[1] = 0 | (!pio_get(BUT8_PIO, PIO_INPUT, BUT8_IDX_MASK) << 0);
 	estado[1] = estado[1] | (!pio_get(BUT9_PIO, PIO_INPUT, BUT9_IDX_MASK) << 1);
 	estado[1] = estado[1] | (!pio_get(BUT10_PIO, PIO_INPUT, BUT10_IDX_MASK) << 2);
+	estado[1] = estado[1] | (!pio_get(ABORT_PIO, PIO_INPUT, ABORT_IDX_MASK) << 3);
+}
+
+static void config_AFEC_pot(Afec *afec, uint32_t afec_id, uint32_t afec_channel, afec_callback_t callback) {
+    afec_enable(afec);
+    struct afec_config afec_cfg;
+    afec_get_config_defaults(&afec_cfg);
+    afec_init(afec, &afec_cfg);
+    afec_set_trigger(afec, AFEC_TRIG_SW);
+    struct afec_ch_config afec_ch_cfg;
+    afec_ch_get_config_defaults(&afec_ch_cfg);
+    afec_ch_cfg.gain = AFEC_GAINVALUE_0;
+    afec_ch_set_config(afec, afec_channel, &afec_ch_cfg);
+    afec_channel_set_analog_offset(afec, afec_channel, 0x200);
+    struct afec_temp_sensor_config afec_temp_sensor_cfg;
+    afec_temp_sensor_get_config_defaults(&afec_temp_sensor_cfg);
+    afec_temp_sensor_set_config(afec, &afec_temp_sensor_cfg);
+    afec_set_callback(afec, afec_channel, callback, 1);
+    NVIC_SetPriority(afec_id, 4);
+    NVIC_EnableIRQ(afec_id);
 }
 
 static void configure_console(void) {
@@ -213,14 +234,11 @@ int hc05_init(void) {
 void task_bluetooth(void) {
 	printf("Task Bluetooth started \n");
 	printf("Inicializando HC05 \n");
-	config_usart0();
-	//hc05_init();
-	io_init();
 	char button1 = '0';
 	char eof = -1;
 	while(1) {
 		read_but();
-		// envia status botão
+		// envia status botões e abort
 		while(!usart_is_tx_ready(USART_COM)) {
 			vTaskDelay(10 / portTICK_PERIOD_MS);
 		}
@@ -230,6 +248,12 @@ void task_bluetooth(void) {
 		}
 		usart_write(USART_COM, estado[1]);
 		
+		// envia status throttle
+		while(!usart_is_tx_ready(USART_COM)) {
+			vTaskDelay(10 / portTICK_PERIOD_MS);
+		}
+		printf("Throttle: %d \n", throttle);
+
 		// envia fim de pacote
 		while(!usart_is_tx_ready(USART_COM)) {
 			vTaskDelay(10 / portTICK_PERIOD_MS);
@@ -249,6 +273,10 @@ int main(void) {
 	sysclk_init();
 	board_init();
 	configure_console();
+	config_usart0();
+	//hc05_init();
+	io_init();
+	config_AFEC_pot(AFEC_POT, AFEC_POT_ID, AFEC_POT_CHANNEL, AFEC_pot_callback);
 	xTaskCreate(task_bluetooth, "BLT", TASK_BLUETOOTH_STACK_SIZE, NULL,	TASK_BLUETOOTH_STACK_PRIORITY, NULL);
 	vTaskStartScheduler();
 	while(1){}
