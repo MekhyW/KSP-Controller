@@ -42,3 +42,8 @@
 #define BUT10_PIO_ID   ID_PIOC
 #define BUT10_IDX      17
 #define BUT10_IDX_MASK (1 << BUT10_IDX)
+
+#define LED_PIO      PIOC
+#define LED_PIO_ID   ID_PIOC
+#define LED_IDX      8
+#define LED_IDX_MASK (1 << LED_IDX)

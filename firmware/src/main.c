@@ -71,7 +71,10 @@ extern void vApplicationMallocFailedHook(void) {
 /************************************************************************/
 
 static void AFEC_pot_callback(void) {
-  throttle = (throttle * 0.5) + (afec_channel_get_value(AFEC_POT, AFEC_POT_CHANNEL) * 0.5);
+	double temp_throttle = afec_channel_get_value(AFEC_POT, AFEC_POT_CHANNEL);
+	temp_throttle /= 4096;
+	temp_throttle *= 127;
+	throttle = (throttle * 0.5) + (temp_throttle * 0.5);
 }
 
 /************************************************************************/
@@ -112,6 +115,9 @@ void io_init(void) {
 	pio_set_debounce_filter(BUT10_PIO, BUT10_IDX_MASK, 100);
 	pio_configure(ABORT_PIO, PIO_INPUT, ABORT_IDX_MASK, PIO_PULLUP | PIO_DEBOUNCE);
 	pio_set_debounce_filter(ABORT_PIO, ABORT_IDX_MASK, 100);
+
+	pmc_enable_periph_clk(LED_PIO_ID);
+	pio_set_output(LED_PIO, LED_IDX_MASK, 1, 0, 0);
 }
 
 void read_but(void) {
@@ -252,7 +258,9 @@ void task_bluetooth(void) {
 		while(!usart_is_tx_ready(USART_COM)) {
 			vTaskDelay(10 / portTICK_PERIOD_MS);
 		}
-		printf("Throttle: %d \n", throttle);
+		usart_write(USART_COM, throttle);
+		afec_channel_enable(AFEC_POT, AFEC_POT_CHANNEL);
+		afec_start_software_conversion(AFEC_POT);
 
 		// envia fim de pacote
 		while(!usart_is_tx_ready(USART_COM)) {
@@ -261,10 +269,61 @@ void task_bluetooth(void) {
 		usart_write(USART_COM, eof);
 
 		// dorme por 10 ms
-		vTaskDelay(300 / portTICK_PERIOD_MS);
+		vTaskDelay(100 / portTICK_PERIOD_MS);
 	}
 }
 
+void task_read(void) {
+	printf("Task Read started \n");
+	int i = 0;
+	char buffer_rx;
+	char buffer_protocol[3];
+	pio_clear(LED_PIO,LED_IDX_MASK);
+				
+	while(1) {
+		while(!usart_is_rx_ready(USART_COM)) {
+			vTaskDelay(10 / portTICK_PERIOD_MS);
+		}
+		int res = usart_read(USART_COM, &buffer_rx);
+		if(!res && (buffer_rx=='\xff')){
+			break;
+	
+		}
+	}
+	
+	while(1) {
+				
+		while(!usart_is_rx_ready(USART_COM)) {
+			vTaskDelay(10 / portTICK_PERIOD_MS);
+		}
+		int res = usart_read(USART_COM, &buffer_rx);
+		if(!res){
+			printf("%d\n",i);
+			buffer_protocol[i] = buffer_rx;
+			i++;
+		}
+		if (i>=3){
+			i =0;
+			printf("%x %x %x\n",buffer_protocol[0],buffer_protocol[1],buffer_protocol[2]);
+
+			if (buffer_protocol[2]!='\xff') continue;
+			printf("%x %x %x\n",buffer_protocol[0],buffer_protocol[1],buffer_protocol[2]);
+			
+			if (buffer_protocol[0]==1){
+				printf("acende");
+			
+				pio_clear(LED_PIO,LED_IDX_MASK);
+	
+			} else {
+				pio_set(LED_PIO,LED_IDX_MASK);
+				
+			}
+			
+			
+		}
+
+	}
+}
 /************************************************************************/
 /* main                                                                 */
 /************************************************************************/
@@ -277,7 +336,8 @@ int main(void) {
 	//hc05_init();
 	io_init();
 	config_AFEC_pot(AFEC_POT, AFEC_POT_ID, AFEC_POT_CHANNEL, AFEC_pot_callback);
-	xTaskCreate(task_bluetooth, "BLT", TASK_BLUETOOTH_STACK_SIZE, NULL,	TASK_BLUETOOTH_STACK_PRIORITY, NULL);
+	//xTaskCreate(task_bluetooth, "BLT", TASK_BLUETOOTH_STACK_SIZE, NULL,	TASK_BLUETOOTH_STACK_PRIORITY, NULL);
+	xTaskCreate(task_read, "READ", TASK_BLUETOOTH_STACK_SIZE, NULL, TASK_BLUETOOTH_STACK_PRIORITY, NULL);
 	vTaskStartScheduler();
 	while(1){}
 	return 0;
