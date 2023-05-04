@@ -55,6 +55,7 @@
 #define CONF_UART_CHAR_LENGTH  US_MR_CHRL_8_BIT
 /** Parity setting */
 #define CONF_UART_PARITY     US_MR_PAR_NO
+
 /** Stop bits setting */
 #define CONF_UART_STOP_BITS    US_MR_NBSTOP_1_BIT
 

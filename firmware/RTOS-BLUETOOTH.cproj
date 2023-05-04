@@ -671,6 +671,9 @@
     <Folder Include="src\config\" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="src\throttle.h">
+      <SubType>compile</SubType>
+    </Compile>
     <None Include="src\asf.h">
       <SubType>compile</SubType>
     </None>
@@ -1193,6 +1196,9 @@
     <None Include="src\ASF\common\services\clock\osc.h">
       <SubType>compile</SubType>
     </None>
+    <Compile Include="src\abort.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\ASF\common\services\clock\same70\sysclk.c">
       <SubType>compile</SubType>
     </Compile>
@@ -1316,6 +1322,12 @@
     <None Include="src\config\conf_sleepmgr.h">
       <SubType>compile</SubType>
     </None>
+    <Compile Include="src\backlit-buttons.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\LEDstrip.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\main.c">
       <SubType>compile</SubType>
     </Compile>
